@@ -153,7 +153,9 @@ async function deployFunction() {
 }
 
 await provisionDatabase();
-// Show member names to teammates, so the app can label presences and cards.
-await project.updateMembershipPrivacyPolicy({ userName: true });
-console.log('Membership privacy: names visible to teammates');
+// New projects hide member details from teammates. Presences and cards refer
+// to people by user ID, so the app needs each member's ID and name. Emails
+// stay hidden.
+await project.updateMembershipPrivacyPolicy({ userId: true, userName: true });
+console.log('Membership privacy: IDs and names visible to teammates');
 await provisionFunction();
