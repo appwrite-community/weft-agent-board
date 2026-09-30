@@ -21,4 +21,4 @@ export const MAX_OPEN_RUNS_PER_TEAM = 5;
 
 export const PRESENCE_TTL_MS = 60_000;
 export const PRESENCE_HEARTBEAT_MS = 20_000;
-export const WRITE_INTERVAL_MS = 250;
+export const WRITE_INTERVAL_MS = 100;
