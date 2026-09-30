@@ -1,0 +1,25 @@
+{
+  "name": "weft-agent-board",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "provision": "pnpm --filter @weft/scripts provision",
+    "seed": "pnpm --filter @weft/scripts seed",
+    "reset": "pnpm --filter @weft/scripts seed --reset",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.11.0",
+    "globals": "17.12.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0"
+  }
+}

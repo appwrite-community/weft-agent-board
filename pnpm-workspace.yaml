@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - functions/*
+  - scripts
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - openai@7.25.0
+  - framer-motion@13.4.5
+  - motion-dom@13.4.5
+  - motion@13.4.5
