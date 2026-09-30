@@ -6,6 +6,7 @@ import {
   PlusIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { Avatar } from '@/components/brand/avatar';
 import { useBoard } from '@/components/board/board-context';
@@ -100,21 +101,26 @@ function Rail() {
  * The quoted title links to the card; the details after " · " become small chips.
  */
 function StepSummary({ step }: { step: Step }) {
-  const { openCard, cards, members } = useBoard();
+  const { board, cards, members } = useBoard();
   const [action, ...details] = step.summary.split(' · ');
   const match = action.match(/^(.*?)“(.+?)”(.*)$/);
   const cardExists = !!step.cardId && cards.some((card) => card.$id === step.cardId);
 
-  const title = match && (
-    <button
-      type="button"
-      disabled={!cardExists}
-      onClick={() => step.cardId && openCard(step.cardId)}
-      className="font-medium text-fg decoration-border-strong underline-offset-2 enabled:hover:underline disabled:cursor-default"
-    >
-      {match[2]}
-    </button>
-  );
+  // A link, not a button, so a long title wraps with the sentence around it.
+  const title =
+    match &&
+    (cardExists ? (
+      <Link
+        to="/boards/$boardId"
+        params={{ boardId: board.$id }}
+        search={{ card: step.cardId! }}
+        className="font-medium text-fg decoration-border-strong underline-offset-2 hover:underline"
+      >
+        {match[2]}
+      </Link>
+    ) : (
+      <span className="font-medium text-fg">{match[2]}</span>
+    ));
 
   return (
     <>

@@ -1,7 +1,6 @@
 import { CalendarIcon, SparkleIcon, TagIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import { AgentGlyph } from '@/components/brand/logo';
-import { Avatar } from '@/components/brand/avatar';
+import { AgentAvatar, Avatar } from '@/components/brand/avatar';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -22,7 +21,7 @@ import {
   priorityName,
 } from '@/lib/board';
 import { exactTime, firstName, isOverdue, longDate, relativeTime, shortDate } from '@/lib/format';
-import { runTitle } from '@/lib/runs';
+import { runLabel } from '@/lib/runs';
 import type { Card, CardStatus, Label, Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useBoard } from './board-context';
@@ -226,59 +225,60 @@ function DuePicker({ card, now }: { card: Card; now: number }) {
 
 /** Who created the card and who changed it last: a person, or the agent on someone's request. */
 function Attribution({ card }: { card: Card }) {
-  const { memberById, runs, cards, now, agent, showRun } = useBoard();
+  const { memberById, runs, now, agent, showRun } = useBoard();
   const creator = memberById.get(card.createdBy);
   const editor = card.editedBy ? memberById.get(card.editedBy) : undefined;
   const run = card.runId ? runs.find((item) => item.$id === card.runId) : undefined;
   const requester = run ? memberById.get(run.requestedBy) : undefined;
   const edited = card.editedBy && card.$updatedAt !== card.$createdAt;
   const byAgent = edited && agent && card.editedBy === agent.userId;
+  const changedAt = (
+    <span title={exactTime(card.$updatedAt)} className="whitespace-nowrap">
+      {relativeTime(card.$updatedAt, now)}
+    </span>
+  );
 
   return (
-    <div className="space-y-3 border-t border-border pt-4 text-12 text-subtle">
-      <p className="flex items-center gap-2">
-        <Avatar member={creator} size={16} />
-        <span className="min-w-0">
-          Created by <span className="text-muted">{creator?.name ?? 'a former member'}</span>
-          <span title={exactTime(card.$createdAt)}> · {shortDate(card.$createdAt)}</span>
-        </span>
-      </p>
+    <div className="space-y-3 border-t border-border pt-4 text-12">
+      <Entry icon={<Avatar member={creator} size={18} />}>
+        <p className="truncate text-muted">
+          Created by <span className="text-fg">{creator?.name ?? 'a former member'}</span>
+        </p>
+        <p className="text-subtle" title={exactTime(card.$createdAt)}>
+          {shortDate(card.$createdAt)}
+        </p>
+      </Entry>
 
       {byAgent ? (
-        <div className="flex gap-2">
-          <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-agent text-agent-fg">
-            <AgentGlyph className="size-2.5" />
-          </span>
-          <p className="min-w-0">
+        <Entry icon={<AgentAvatar size={18} />}>
+          <p className="text-muted">
             Last change by <span className="text-agent">the agent</span>
-            {run && requester && (
-              <>
-                {' · '}
-                <button
-                  type="button"
-                  onClick={() => showRun(run.$id)}
-                  className="text-left text-muted underline decoration-border-strong underline-offset-2 hover:text-fg hover:decoration-subtle"
-                >
-                  {firstName(requester.name)}'s request “{runTitle(run, cards)}”
-                </button>
-              </>
-            )}
-            <span title={exactTime(card.$updatedAt)}> · {relativeTime(card.$updatedAt, now)}</span>
           </p>
-        </div>
+          <p className="text-subtle">
+            {run && requester ? (
+              <button
+                type="button"
+                onClick={() => showRun(run.$id)}
+                className="text-left text-muted underline decoration-border-strong underline-offset-2 hover:text-fg hover:decoration-subtle"
+              >
+                {firstName(requester.name)}: {runLabel(run)}
+              </button>
+            ) : (
+              'On a teammate’s request'
+            )}
+            {' · '}
+            {changedAt}
+          </p>
+        </Entry>
       ) : (
         edited &&
         editor && (
-          <p className="flex items-center gap-2">
-            <Avatar member={editor} size={16} />
-            <span className="min-w-0">
-              Last change by <span className="text-muted">{editor.name}</span>
-              <span title={exactTime(card.$updatedAt)}>
-                {' '}
-                · {relativeTime(card.$updatedAt, now)}
-              </span>
-            </span>
-          </p>
+          <Entry icon={<Avatar member={editor} size={18} />}>
+            <p className="truncate text-muted">
+              Last change by <span className="text-fg">{editor.name}</span>
+            </p>
+            <p className="text-subtle">{changedAt}</p>
+          </Entry>
         )
       )}
 
@@ -291,6 +291,15 @@ function Attribution({ card }: { card: Card }) {
           <p className="text-12 leading-normal text-[#d4d4d8]">{card.agentNote}</p>
         </div>
       )}
+    </div>
+  );
+}
+
+function Entry({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex gap-2.5">
+      <span className="mt-px shrink-0">{icon}</span>
+      <div className="min-w-0 space-y-0.5 leading-snug">{children}</div>
     </div>
   );
 }

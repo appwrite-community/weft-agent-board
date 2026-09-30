@@ -1,4 +1,5 @@
 import {
+  closestCenter,
   closestCorners,
   DndContext,
   DragOverlay,
@@ -6,14 +7,19 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  pointerWithin,
+  rectIntersection,
   type Announcements,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
+  type KeyboardCoordinateGetter,
+  type UniqueIdentifier,
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { LayoutGroup } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { COLUMN_NAMES, COLUMNS, columnCards, positionBetween } from '@/lib/board';
 import type { Card, CardStatus } from '@/lib/types';
@@ -31,6 +37,71 @@ const toLayout = (cards: Card[]): Layout =>
 const findColumn = (layout: Layout, id: string) =>
   (id in layout ? id : COLUMNS.find(({ status }) => layout[status].includes(id))?.status) as
     CardStatus | undefined;
+
+const isColumn = (id: unknown): id is CardStatus => COLUMNS.some(({ status }) => status === id);
+
+/**
+ * Finds the column under the pointer (or under the card, for keyboard drags),
+ * then the closest card in it. An empty column is a drop target on its own.
+ */
+const findTarget: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args);
+  const hits = pointerHits.length > 0 ? pointerHits : rectIntersection(args);
+  const column = hits
+    .map(({ id, data }) =>
+      isColumn(id) ? id : data?.droppableContainer?.data.current?.sortable?.containerId,
+    )
+    .find(isColumn);
+  if (!column) return closestCorners(args);
+
+  const cards = args.droppableContainers.filter(
+    (container) => container.data.current?.sortable?.containerId === column,
+  );
+  const closest = closestCenter({ ...args, droppableContainers: cards });
+  return closest.length > 0 ? closest : [{ id: column }];
+};
+
+/**
+ * Left and right arrows move a picked-up card to the top of the next column,
+ * empty or not. Up and down reorder inside the column.
+ */
+const coordinateGetter: KeyboardCoordinateGetter = (event, args) => {
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[event.code];
+  if (!step) return sortableKeyboardCoordinates(event, args);
+  event.preventDefault();
+  const { active, over, droppableRects } = args.context;
+  const current = over ?? active;
+  const from = isColumn(current?.id) ? current.id : current?.data.current?.sortable?.containerId;
+  const next = COLUMNS[COLUMNS.findIndex(({ status }) => status === from) + step];
+  const rect = next && droppableRects.get(next.status);
+  return rect ? { x: rect.left + 8, y: rect.top + 12 } : undefined;
+};
+
+/**
+ * Right after a card moves to another column, the columns are still being
+ * measured. Keeping the last target for one frame stops the card from
+ * bouncing between two columns.
+ */
+function useColumnCollisions(layout: Layout | null) {
+  const lastOverId = useRef<UniqueIdentifier | null>(null);
+  const movedToNewColumn = useRef(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => (movedToNewColumn.current = false));
+    return () => cancelAnimationFrame(frame);
+  }, [layout]);
+
+  const collisionDetection: CollisionDetection = useCallback((args) => {
+    if (movedToNewColumn.current && lastOverId.current !== null) {
+      return [{ id: lastOverId.current }];
+    }
+    const collisions = findTarget(args);
+    lastOverId.current = collisions[0]?.id ?? null;
+    return collisions;
+  }, []);
+
+  return { collisionDetection, markMoved: () => (movedToNewColumn.current = true) };
+}
 
 type BoardColumnsProps = {
   search: string;
@@ -53,13 +124,14 @@ export function BoardColumns({
   const [activeId, setActiveId] = useState<string | null>(null);
   const layout = dragLayout ?? toLayout(visible);
   const activeCard = activeId ? cardById.get(activeId) : undefined;
+  const { collisionDetection, markMoved } = useColumnCollisions(dragLayout);
 
   const freshIds = useFreshAgentCards(cards, agent?.userId);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter,
       keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter'] },
     }),
   );
@@ -74,6 +146,7 @@ export function BoardColumns({
     const from = findColumn(dragLayout, String(active.id));
     const to = findColumn(dragLayout, String(over.id));
     if (!from || !to || from === to) return;
+    markMoved();
     setDragLayout((current) => {
       if (!current) return current;
       const target = current[to];
@@ -128,7 +201,7 @@ export function BoardColumns({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetection}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}

@@ -185,7 +185,7 @@ function ExpandedRun({
         {run.reply && run.status !== 'failed' && (
           <div
             className={cn(
-              'max-h-80 overflow-y-auto rounded-lg border border-border bg-surface px-3 py-2.5',
+              'rounded-lg border border-border bg-surface px-3 py-2.5',
               run.status === 'stopped' && 'text-muted',
             )}
           >

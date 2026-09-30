@@ -17,6 +17,11 @@ export function setConnectionState(next: ConnectionState) {
   listeners.forEach((listener) => listener());
 }
 
+/** The board has refetched what it missed. Ignored if the socket closed again meanwhile. */
+export function markCaughtUp() {
+  if (state === 'syncing') setConnectionState('live');
+}
+
 realtime.onClose(() => setConnectionState('offline'));
 realtime.onOpen(() => {
   if (state === 'offline') setConnectionState('syncing');

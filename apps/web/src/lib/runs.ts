@@ -21,6 +21,22 @@ export function runTitle(run: Run, cards: Card[]) {
   }
 }
 
+/** The request without its card, for places that already show the card. */
+export function runLabel(run: Run) {
+  switch (run.kind) {
+    case 'triage':
+      return 'Triage the inbox';
+    case 'split':
+      return 'Split into subtasks';
+    case 'draft':
+      return 'Draft description';
+    case 'summary':
+      return 'Standup summary';
+    case 'ask':
+      return run.prompt ?? 'Request';
+  }
+}
+
 /** Newest first; the dock pulls running and queued runs to the top itself. */
 export const sortRuns = (runs: Run[]) =>
   [...runs].sort((a, b) => b.$createdAt.localeCompare(a.$createdAt));

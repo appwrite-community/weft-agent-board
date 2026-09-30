@@ -25,10 +25,10 @@ export function PresenceStack() {
   return (
     <ul
       aria-label="On this board"
-      className="flex items-center pl-1 [--avatar-gap:var(--color-canvas)]"
+      className="flex items-center px-1 [--avatar-gap:var(--color-canvas)]"
     >
       {shown.map(({ presence, member }) => (
-        <li key={presence.userId} className="-ml-2 first:ml-0">
+        <li key={presence.userId} className="-ml-px first:ml-0">
           <Tooltip
             content={
               <span>
@@ -46,7 +46,7 @@ export function PresenceStack() {
         </li>
       ))}
       {hidden.length > 0 && (
-        <li className="-ml-2">
+        <li className="ml-1">
           <Tooltip content={hidden.map(({ member }) => member.name).join(', ')}>
             <span
               tabIndex={0}

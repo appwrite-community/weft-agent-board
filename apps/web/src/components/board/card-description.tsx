@@ -2,8 +2,8 @@ import { useRef, useState } from 'react';
 import { AgentGlyph } from '@/components/brand/logo';
 import { Kbd } from '@/components/ui/kbd';
 import { Markdown } from '@/components/ui/markdown';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { Card, Presence } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { useBoard } from './board-context';
 import { EditorNote } from './editor-note';
 
@@ -46,20 +46,9 @@ export function CardDescription({
     <section>
       <h3 className="mb-2 text-12 font-medium text-muted">Description</h3>
 
-      {agentWriting && (
-        <div
-          role="status"
-          className="mb-2.5 flex items-center gap-2 rounded-lg border border-agent/25 bg-agent/8 px-3 py-2 text-12 font-medium text-agent"
-        >
-          <span className="flex size-4 items-center justify-center rounded-[4px] bg-agent text-agent-fg">
-            <AgentGlyph className="size-2.5" />
-          </span>
-          The agent is writing this description
-          <span className="ml-auto size-1.5 animate-pulse-dot rounded-full bg-agent" />
-        </div>
-      )}
-
-      {editing ? (
+      {agentWriting ? (
+        <AgentWriting text={card.description ?? ''} />
+      ) : editing ? (
         <div>
           <textarea
             autoFocus
@@ -94,9 +83,9 @@ export function CardDescription({
         </div>
       ) : (
         <div
-          role={agentWriting ? undefined : 'button'}
-          tabIndex={agentWriting ? undefined : 0}
-          aria-label={agentWriting ? undefined : 'Edit description'}
+          role="button"
+          tabIndex={0}
+          aria-label="Edit description"
           onClick={startEditing}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -104,15 +93,10 @@ export function CardDescription({
               startEditing();
             }
           }}
-          className={cn(
-            '-mx-3 rounded-lg px-3 py-2 transition-colors duration-150',
-            agentWriting
-              ? 'bg-agent/[0.03] shadow-[inset_0_0_0_1px_rgb(45_212_191/0.18)]'
-              : 'cursor-text hover:bg-card/70',
-          )}
+          className="-mx-3 cursor-text rounded-lg px-3 py-2 transition-colors duration-150 hover:bg-card/70"
         >
-          {card.description || agentWriting ? (
-            <Markdown streaming={agentWriting}>{card.description ?? ''}</Markdown>
+          {card.description ? (
+            <Markdown>{card.description}</Markdown>
           ) : (
             <p className="text-14 text-subtle">Add a description…</p>
           )}
@@ -121,5 +105,34 @@ export function CardDescription({
 
       {editor && <EditorNote presence={editor} field="description" />}
     </section>
+  );
+}
+
+/** Read-only while the agent streams the description in. The text arrives through Realtime. */
+function AgentWriting({ text }: { text: string }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-agent/25 bg-agent/[0.03]">
+      <div
+        role="status"
+        className="flex items-center gap-2 border-b border-agent/15 bg-agent/[0.06] px-3 py-2 text-12 font-medium text-agent"
+      >
+        <span className="flex size-4 items-center justify-center rounded-[4px] bg-agent text-agent-fg">
+          <AgentGlyph className="size-2.5" />
+        </span>
+        The agent is writing this description
+        <span className="ml-auto size-1.5 animate-pulse-dot rounded-full bg-agent" />
+      </div>
+      <div className="px-3 py-3">
+        {text.trim() ? (
+          <Markdown streaming>{text}</Markdown>
+        ) : (
+          <div aria-hidden className="space-y-2.5 py-1">
+            <Skeleton className="h-3 w-11/12 bg-agent/10" />
+            <Skeleton className="h-3 w-4/5 bg-agent/10" />
+            <Skeleton className="h-3 w-3/5 bg-agent/10" />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

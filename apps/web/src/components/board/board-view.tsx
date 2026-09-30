@@ -10,7 +10,7 @@ import { useHotkeys } from '@/hooks/use-hotkeys';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useNow } from '@/hooks/use-now';
 import { announcePresence, useLivePresences } from '@/hooks/use-presence';
-import { setConnectionState, useConnectionState } from '@/lib/connection';
+import { markCaughtUp, useConnectionState } from '@/lib/connection';
 import {
   accountQuery,
   cardsQuery,
@@ -76,7 +76,7 @@ export function BoardView({ board }: { board: Board }) {
       queryClient.fetchQuery({ ...presencesQuery, staleTime: 0 }),
     ])
       .catch(() => undefined)
-      .finally(() => setConnectionState('live'));
+      .finally(markCaughtUp);
   }, [connection, queryClient, board.$id]);
 
   const dockOpen = isMobile ? drawerOpen : dockPreference;

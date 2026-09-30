@@ -260,7 +260,7 @@ function Viewers({ viewers }: { viewers: Presence[] }) {
         {viewers.map((presence) => {
           const member = memberById.get(presence.userId)!;
           return (
-            <li key={presence.userId} className="-ml-1.5 first:ml-0">
+            <li key={presence.userId} className="-ml-px first:ml-0">
               <Tooltip
                 content={`${member.userId === me.$id ? 'You' : member.name} · ${describePresence(presence, member, cards)}`}
               >
