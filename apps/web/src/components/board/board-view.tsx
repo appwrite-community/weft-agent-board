@@ -90,6 +90,7 @@ export function BoardView({ board }: { board: Board }) {
     '/': () => searchRef.current?.focus(),
     n: () => setComposerColumn('inbox'),
     a: () => setDockOpen(!dockOpen),
+    escape: () => setSearch(''),
   });
 
   const memberById = new Map(members.map((member) => [member.userId, member]));

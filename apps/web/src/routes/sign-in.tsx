@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { account } from '@/lib/appwrite';
 import { setConnectionState } from '@/lib/connection';
 import { DEMO_PEOPLE } from '@/lib/demo';
+import { setSessionHint } from '@/lib/session';
 import { accountQuery } from '@/lib/queries';
 
 type SignInSearch = { redirect?: string };
@@ -54,6 +55,7 @@ function SignIn() {
     setError(null);
     try {
       await account.createEmailPasswordSession({ email: email.trim(), password });
+      setSessionHint(true);
       queryClient.setQueryData(accountQuery.queryKey, await account.get());
       setConnectionState('live');
       if (redirectTo?.startsWith('/')) await navigate({ href: redirectTo, replace: true });

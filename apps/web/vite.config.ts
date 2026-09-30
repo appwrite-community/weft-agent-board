@@ -8,7 +8,11 @@ export default defineConfig({
   // One .env at the repository root for the scripts and the app.
   // Vite exposes only the VITE_ variables to the browser.
   envDir: '../..',
-  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
+  plugins: [
+    tanstackRouter({ target: 'react', autoCodeSplitting: true, semicolons: true }),
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

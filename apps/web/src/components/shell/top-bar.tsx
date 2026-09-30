@@ -99,6 +99,7 @@ export function TopBar({ search, onSearchChange, searchRef }: TopBarProps) {
         <Tooltip content={dockOpen ? 'Hide the agent (A)' : 'Show the agent (A)'}>
           <Button
             variant="ghost"
+            aria-label="Agent"
             aria-pressed={dockOpen}
             onClick={() => setDockOpen(!dockOpen)}
             className="gap-1.5 px-2.5 text-fg aria-pressed:bg-card aria-pressed:shadow-[inset_0_0_0_1px_var(--color-border-strong)]"

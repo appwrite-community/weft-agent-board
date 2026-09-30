@@ -14,6 +14,7 @@ import {
 import { clearPresence } from '@/hooks/use-presence';
 import { account, realtime } from '@/lib/appwrite';
 import { accountQuery } from '@/lib/queries';
+import { setSessionHint } from '@/lib/session';
 
 /** Removes the presence first, while the session can still delete it. */
 function useSignOut() {
@@ -23,6 +24,7 @@ function useSignOut() {
     const user = queryClient.getQueryData(accountQuery.queryKey);
     if (user) await clearPresence(user.$id);
     await account.deleteSession({ sessionId: 'current' }).catch(() => undefined);
+    setSessionHint(false);
     await realtime.disconnect();
     queryClient.clear();
     await navigate({ to: '/sign-in', search: {} });

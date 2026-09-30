@@ -41,11 +41,12 @@ export function CardTile({
   const agentViewer = viewers.find(({ member }) => member.isAgent);
   const ringColor = agentViewer ? undefined : viewers[0]?.member.color;
   const hasTopRow = card.label || card.priority !== 'none';
+  const hasFooter = assignee || card.dueAt || subtasks.length > 0 || agentChanged;
 
   return (
     <div
       className={cn(
-        'group/card relative flex min-h-19 flex-col gap-2 rounded-lg border border-border bg-card p-3 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out',
+        'group/card relative flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out',
         'hover:border-border-strong hover:bg-card-hover',
         (agentViewer || ringColor) && 'border-transparent hover:border-transparent',
         agentViewer &&
@@ -73,37 +74,41 @@ export function CardTile({
 
       <p className="line-clamp-2 text-14 leading-[1.35] font-medium text-fg">{card.title}</p>
 
-      <div className="flex h-5 items-center gap-2.5 text-12 text-subtle">
-        <Tooltip content={assignee ? assignee.name : 'Unassigned'}>
-          <span tabIndex={-1} className="inline-flex">
-            <Avatar member={assignee} size={20} />
-          </span>
-        </Tooltip>
-        {card.dueAt && (
-          <span
-            className={cn(
-              'tabular inline-flex items-center gap-1',
-              isOverdue(card.dueAt, now) && 'text-danger',
-            )}
-          >
-            <CalendarIcon className="size-3.5" />
-            {shortDate(card.dueAt)}
-          </span>
-        )}
-        {subtasks.length > 0 && (
-          <span className="tabular inline-flex items-center gap-1">
-            <ListChecksIcon className="size-3.5" />
-            {doneSubtasks}/{subtasks.length}
-          </span>
-        )}
-        {agentChanged && (
-          <Tooltip content={`Updated by the agent ${relativeTime(card.$updatedAt, now)}`}>
-            <span tabIndex={-1} className="ml-auto inline-flex text-agent">
-              <SparkleIcon className="size-3.5 fill-current" />
+      {hasFooter && (
+        <div className="flex h-5 items-center gap-2.5 text-12 text-subtle">
+          {assignee && (
+            <Tooltip content={assignee.name}>
+              <span tabIndex={-1} className="inline-flex">
+                <Avatar member={assignee} size={20} />
+              </span>
+            </Tooltip>
+          )}
+          {card.dueAt && (
+            <span
+              className={cn(
+                'tabular inline-flex items-center gap-1',
+                isOverdue(card.dueAt, now) && 'text-danger',
+              )}
+            >
+              <CalendarIcon className="size-3.5" />
+              {shortDate(card.dueAt)}
             </span>
-          </Tooltip>
-        )}
-      </div>
+          )}
+          {subtasks.length > 0 && (
+            <span className="tabular inline-flex items-center gap-1">
+              <ListChecksIcon className="size-3.5" />
+              {doneSubtasks}/{subtasks.length}
+            </span>
+          )}
+          {agentChanged && (
+            <Tooltip content={`Updated by the agent ${relativeTime(card.$updatedAt, now)}`}>
+              <span tabIndex={-1} className="ml-auto inline-flex text-agent">
+                <SparkleIcon className="size-3.5 fill-current" />
+              </span>
+            </Tooltip>
+          )}
+        </div>
+      )}
 
       {card.agentNote && (
         <Tooltip content={card.agentNote} side="bottom" align="start">

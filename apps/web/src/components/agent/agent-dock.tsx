@@ -47,6 +47,10 @@ export function AgentDrawer({
         <SheetPrimitive.Overlay className="fixed inset-0 z-40 bg-overlay data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <SheetPrimitive.Content
           aria-describedby={undefined}
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            (event.currentTarget as HTMLElement).focus();
+          }}
           className="fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] flex-col rounded-t-2xl border-t border-border-strong bg-surface shadow-dialog outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom"
         >
           <SheetPrimitive.Title className="sr-only">Agent</SheetPrimitive.Title>
@@ -229,7 +233,7 @@ function EmptyDock({ onPick }: { onPick: (text: string) => void }) {
             <button
               type="button"
               onClick={() => onPick(text)}
-              className="group flex w-full items-center gap-2 rounded-lg border border-border bg-card/50 px-3 py-2.5 text-13 text-fg transition-colors duration-150 hover:border-border-strong hover:bg-card"
+              className="group flex w-full items-center gap-2 rounded-lg border border-border bg-card/50 px-3 py-2.5 text-left text-13 text-fg transition-colors duration-150 hover:border-border-strong hover:bg-card"
             >
               <span className="flex-1">{text}</span>
               <ArrowUpRightIcon className="size-3.5 text-subtle transition-colors group-hover:text-fg" />

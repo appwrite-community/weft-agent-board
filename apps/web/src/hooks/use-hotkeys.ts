@@ -8,7 +8,7 @@ function isTyping(target: EventTarget | null) {
 }
 
 /**
- * Single-key shortcuts for the board (`/`, `n`, `a`). They are ignored while
+ * Single-key shortcuts for the board (`/`, `n`, `a`, `Escape`). They are ignored while
  * the person types or while a dialog or menu is open.
  */
 export function useHotkeys(handlers: Handlers) {

@@ -15,6 +15,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuLabel,
   ContextMenuSeparator,
   ContextMenuSub,
   ContextMenuSubContent,
@@ -86,7 +87,10 @@ export function SortableCard({ card, viewers, fresh, animateLayout }: SortableCa
               className="rounded-lg outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(237_237_239/0.6)]"
             >
               {isDragging ? (
-                <div className="min-h-19 rounded-lg border border-dashed border-border-strong bg-card/40" />
+                // Keeps the card's height where it will land.
+                <div className="rounded-lg border border-dashed border-border-strong bg-card/40">
+                  <CardTile card={card} className="invisible border-0" />
+                </div>
               ) : (
                 <CardTile card={card} viewers={viewers} fresh={fresh} />
               )}
@@ -120,6 +124,7 @@ export function SortableCard({ card, viewers, fresh, animateLayout }: SortableCa
             Copy link
           </ContextMenuItem>
           <ContextMenuSeparator />
+          <ContextMenuLabel>Ask the agent</ContextMenuLabel>
           <ContextMenuItem
             disabled={busy}
             onSelect={() => request({ boardId: board.$id, kind: 'split', cardId: card.$id })}

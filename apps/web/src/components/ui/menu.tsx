@@ -118,6 +118,10 @@ export function ContextMenuSubContent({
   );
 }
 
+export const ContextMenuLabel = ({ className, ...props }: ComponentProps<'div'>) => (
+  <ContextPrimitive.Label className={cn(labelStyles, className)} {...props} />
+);
+
 export const ContextMenuSeparator = ({ className }: { className?: string }) => (
   <ContextPrimitive.Separator className={cn(separatorStyles, className)} />
 );

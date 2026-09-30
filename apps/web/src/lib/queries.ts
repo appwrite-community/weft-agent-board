@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { AppwriteException, Query } from 'appwrite';
 import { account, presences, table, tablesDB, teams } from './appwrite';
 import { toMembers } from './people';
+import { hasSessionHint, setSessionHint } from './session';
 import type { Board, Card, Presence, Run, Step } from './types';
 
 /** How many runs the dock shows. */
@@ -21,10 +22,14 @@ async function orNull<T>(request: Promise<T>) {
 export const accountQuery = queryOptions({
   queryKey: ['account'],
   queryFn: async () => {
+    if (!hasSessionHint()) return null;
     try {
       return await account.get();
     } catch (err) {
-      if (err instanceof AppwriteException && err.code === 401) return null;
+      if (err instanceof AppwriteException && err.code === 401) {
+        setSessionHint(false);
+        return null;
+      }
       throw err;
     }
   },

@@ -11,13 +11,16 @@ export function PresenceStack() {
   const compact = useMediaQuery('(max-width: 767px)');
   const limit = compact ? 3 : 4;
 
+  // On small screens your own avatar is already in the user menu.
   const entries = presences
+    .filter((presence) => !compact || presence.userId !== me.$id)
     .map((presence) => ({ presence, member: memberById.get(presence.userId)! }))
     .sort((a, b) => rank(a.member, me.$id) - rank(b.member, me.$id));
   const shown = entries.slice(0, limit);
   const hidden = entries.slice(limit);
 
-  if (entries.length === 0) return null;
+  // Alone on the board: nothing to show next to your own avatar.
+  if (entries.every(({ presence }) => presence.userId === me.$id)) return null;
 
   return (
     <ul
