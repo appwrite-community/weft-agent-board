@@ -6,6 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "pnpm --filter @weft/web dev",
+    "build": "pnpm --filter @weft/web build",
     "provision": "pnpm --filter @weft/scripts provision",
     "seed": "pnpm --filter @weft/scripts seed",
     "reset": "pnpm --filter @weft/scripts seed --reset",
