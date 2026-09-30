@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { AgentGlyph } from '@/components/brand/logo';
 import { Kbd } from '@/components/ui/kbd';
+import { useAgentStream } from '@/hooks/use-agent-stream';
 import { Markdown } from '@/components/ui/markdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Card, Presence } from '@/lib/types';
@@ -24,10 +25,11 @@ export function CardDescription({
   const { actions, focusField } = useBoard();
   const [draft, setDraft] = useState<string | null>(null);
   const canceled = useRef(false);
-  const editing = draft !== null && !agentWriting;
+  const { writing, streamed } = useAgentStream(agentWriting, card.description ?? '');
+  const editing = draft !== null && !writing;
 
   const startEditing = () => {
-    if (agentWriting) return;
+    if (writing) return;
     setDraft(card.description ?? '');
   };
 
@@ -46,8 +48,8 @@ export function CardDescription({
     <section>
       <h3 className="mb-2 text-12 font-medium text-muted">Description</h3>
 
-      {agentWriting ? (
-        <AgentWriting text={card.description ?? ''} />
+      {writing ? (
+        <AgentWriting text={streamed} />
       ) : editing ? (
         <div>
           <textarea

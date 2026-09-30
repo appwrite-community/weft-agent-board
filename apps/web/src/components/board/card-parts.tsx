@@ -18,9 +18,18 @@ export function LabelChip({ label, className }: { label: Label; className?: stri
   );
 }
 
-/** Signal bars for low to high, a filled alert for urgent, nothing for none. */
-export function PriorityIcon({ priority, className }: { priority: Priority; className?: string }) {
-  if (priority === 'none') return null;
+/** Signal bars for low to high, a filled alert for urgent, nothing for none (or empty bars). */
+export function PriorityIcon({
+  priority,
+  className,
+  showNone,
+}: {
+  priority: Priority;
+  className?: string;
+  /** Draw empty bars for "No priority", for pickers that align an icon column. */
+  showNone?: boolean;
+}) {
+  if (priority === 'none' && !showNone) return null;
   const label = `${priorityName(priority)} priority`;
   if (priority === 'urgent') {
     return (
@@ -36,7 +45,7 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
       </svg>
     );
   }
-  const level = { low: 1, medium: 2, high: 3 }[priority];
+  const level = { none: 0, low: 1, medium: 2, high: 3 }[priority];
   return (
     <svg
       viewBox="0 0 16 16"

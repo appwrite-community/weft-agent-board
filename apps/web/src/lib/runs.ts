@@ -21,6 +21,9 @@ export function runTitle(run: Run, cards: Card[]) {
   }
 }
 
+const clip = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+
 /** The request without its card, for places that already show the card. */
 export function runLabel(run: Run) {
   switch (run.kind) {
@@ -33,7 +36,7 @@ export function runLabel(run: Run) {
     case 'summary':
       return 'Standup summary';
     case 'ask':
-      return run.prompt ?? 'Request';
+      return clip(run.prompt ?? 'Request', 48);
   }
 }
 

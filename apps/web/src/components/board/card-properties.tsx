@@ -65,12 +65,14 @@ export function CardProperties({ card }: { card: Card }) {
             options={PRIORITIES.map(({ value, name }) => ({
               value,
               label: name,
-              icon:
-                value === 'none' ? <span className="size-4" /> : <PriorityIcon priority={value} />,
+              icon: <PriorityIcon priority={value} showNone />,
             }))}
           >
             {card.priority === 'none' ? (
-              <span className="text-subtle">No priority</span>
+              <>
+                <PriorityIcon priority="none" showNone />
+                <span className="text-subtle">No priority</span>
+              </>
             ) : (
               <>
                 <PriorityIcon priority={card.priority} />
@@ -104,7 +106,10 @@ export function CardProperties({ card }: { card: Card }) {
                 {labelInfo(card.label).name}
               </>
             ) : (
-              <span className="text-subtle">No label</span>
+              <>
+                <TagIcon className="size-4 shrink-0 text-subtle" />
+                <span className="text-subtle">No label</span>
+              </>
             )}
           </Picker>
         </Property>
