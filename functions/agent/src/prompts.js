@@ -23,7 +23,7 @@ export function requestInstruction(run, target) {
     case 'draft':
       return `Write the description of the card “${target.title}” with write_description. In the brief, say what the description must cover.`;
     case 'summary':
-      return 'Write a standup summary of this board for the team: what is done, what is in progress and who owns it, and what is urgent or at risk. Do not change any cards.';
+      return 'Write a standup summary of this board for the team: what is done, what is in progress and who owns it, and what is urgent or at risk. A card in Done with a "Duplicate of" note was closed as a duplicate, not finished. Mention each card at most once. Do not change any cards.';
     case 'ask':
       return `${run.prompt}\n\nIf the request needs a change that your tools cannot make, say so in your reply.`;
   }

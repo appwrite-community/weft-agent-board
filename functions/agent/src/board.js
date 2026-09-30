@@ -84,6 +84,7 @@ export function compactCard(card) {
     due: card.dueAt ? card.dueAt.slice(0, 10) : null,
     parent: card.parentId ?? null,
     description: card.description ? shorten(card.description, 300) : null,
+    note: card.agentNote ?? null,
   };
 }
 
