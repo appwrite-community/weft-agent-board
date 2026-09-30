@@ -15,15 +15,15 @@ export class AgentRequestError extends Error {}
 /**
  * Asks the agent for something. The function checks the request, queues it
  * as a run, and answers right away; the agent's work then arrives through
- * Realtime. The request ID makes a retried request safe: the function finds
+ * Realtime. To retry a request, pass the same `requestId`: the function finds
  * the run it already created instead of queuing the work twice.
  */
-export async function requestRun(request: RunRequest) {
+export async function requestRun(request: RunRequest, requestId = ID.unique()) {
   const execution = await functions.createExecution({
     functionId: AGENT_FUNCTION_ID,
     xpath: '/runs',
     method: ExecutionMethod.POST,
-    body: JSON.stringify({ requestId: ID.unique(), ...request }),
+    body: JSON.stringify({ requestId, ...request }),
   });
   return readResponse<{ runId: string }>(execution);
 }

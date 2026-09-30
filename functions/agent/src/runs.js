@@ -265,28 +265,35 @@ export async function recover(
   { teamId, kickQueued = false, log },
 ) {
   const cutoff = new Date(Date.now() - STALE_AFTER_MS).toISOString();
-  const { rows: stale } = await tablesDB.listRows({
-    ...ACTIVE_RUNS,
-    queries: [
-      Query.lessThan('$createdAt', cutoff),
-      ...(teamId ? [Query.equal('teamId', [teamId])] : []),
-      Query.limit(100),
-    ],
-  });
+  // Recovery releases each claim, so the next page starts with the claims
+  // that are left. `recovered` stops the loop if a release did not go through.
+  const recovered = new Set();
+  for (;;) {
+    const { rows: stale } = await tablesDB.listRows({
+      ...ACTIVE_RUNS,
+      queries: [
+        Query.lessThan('$createdAt', cutoff),
+        ...(teamId ? [Query.equal('teamId', [teamId])] : []),
+        Query.limit(100),
+      ],
+    });
+    const fresh = stale.filter((active) => !recovered.has(active.$id));
+    for (const active of fresh) {
+      recovered.add(active.$id);
+      // Remove the presence before releasing the team, so it can't remove
+      // the presence of the team's next run.
+      const agentId = await findAgentId(teams, active.teamId);
+      if (agentId) await orNull(presences.delete({ presenceId: agentId }));
 
-  for (const active of stale) {
-    // Remove the presence before releasing the team, so it can't remove
-    // the presence of the team's next run.
-    const agentId = await findAgentId(teams, active.teamId);
-    if (agentId) await orNull(presences.delete({ presenceId: agentId }));
-
-    const run = await orNull(tablesDB.getRow({ ...RUNS, rowId: active.$id }));
-    if (run && !FINISHED.includes(run.status)) {
-      await finish(tablesDB, run, { status: 'failed', error: 'The agent stopped responding.' });
-    } else {
-      await release(tablesDB, active.$id);
+      const run = await orNull(tablesDB.getRow({ ...RUNS, rowId: active.$id }));
+      if (run && !FINISHED.includes(run.status)) {
+        await finish(tablesDB, run, { status: 'failed', error: 'The agent stopped responding.' });
+      } else {
+        await release(tablesDB, active.$id);
+      }
+      log(`Recovered run ${active.$id} of ${active.teamId}`);
     }
-    log(`Recovered run ${active.$id} of ${active.teamId}`);
+    if (stale.length < 100 || fresh.length === 0) break;
   }
 
   if (kickQueued) {

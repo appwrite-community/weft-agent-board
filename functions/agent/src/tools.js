@@ -331,14 +331,23 @@ export function createToolbox({ clients, openai, board, run, target, presence, d
 
   /** The name of a teammate who is editing this field of the card, if any. */
   async function personEditing(cardId, field) {
-    const { presences: editing } = await presences.list({
-      queries: [Query.equal('status', ['editing']), Query.limit(100)],
-    });
-    const person = editing.find(
-      ({ userId, metadata }) =>
-        metadata?.cardId === cardId && metadata?.field === field && personName(userId),
-    );
-    return person ? personName(person.userId) : null;
+    let cursor = null;
+    for (;;) {
+      const { presences: editing } = await presences.list({
+        queries: [
+          Query.equal('status', ['editing']),
+          Query.limit(100),
+          ...(cursor ? [Query.cursorAfter(cursor)] : []),
+        ],
+      });
+      const person = editing.find(
+        ({ userId, metadata }) =>
+          metadata?.cardId === cardId && metadata?.field === field && personName(userId),
+      );
+      if (person) return personName(person.userId);
+      if (editing.length < 100) return null;
+      cursor = editing.at(-1).$id;
+    }
   }
 
   return {
